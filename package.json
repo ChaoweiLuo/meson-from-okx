@@ -1,0 +1,12 @@
+{
+  "name": "meson-rpc-get-logs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "5",
+    "mongodb": "^6.9.0",
+    "web3": "^4.13.0"
+  },
+  "type": "module"
+}
