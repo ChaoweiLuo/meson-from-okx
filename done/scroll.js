@@ -28,7 +28,7 @@ async function getLogs() {
 async function  getTransaction(hash) {
   const provider = new ethers.providers.JsonRpcProvider(rpc.url);
   const tx = await provider.getTransaction(hash)
-  // const receipt = await provider.getTransactionReceipt(hash);
+  const receipt = await provider.getTransactionReceipt(hash);
   if(String(tx.to).toLowerCase() === okxContract) {
     col.findOneAndUpdate({ _id: tx.hash}, { $set: tx }, { upsert: true })
     console.log('find ', ++count);
