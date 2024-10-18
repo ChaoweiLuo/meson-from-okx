@@ -10,6 +10,7 @@ const okxContract = `0x3335733c454805df6a77f825f266e136FB4a3333`.toLowerCase()
 let count = 0;
 // 最后一次同步区块是： 7777000
 // 如果需要继续往前同步就从 7777000 开始
+// 84天前
 async function getLogs() {
   const provider = new ethers.providers.JsonRpcProvider(rpc.url);
   let blockNumber = 7777000 // await provider.getBlockNumber();

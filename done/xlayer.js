@@ -10,4 +10,4 @@ void async function main() {
   await getLogs()
 }()
 
-// 已完成
+// 已完成，整个链全下来了。
