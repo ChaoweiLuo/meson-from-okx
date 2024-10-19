@@ -15,13 +15,14 @@ export function build (rpc, okxContract, mesonContract, blockCount) {
         address: okxContract
       })
       total += logs.length
-      console.log('blockNumber:', blockNumber, 'logs:', logs.length, "total", total, "count", count)
+      console.log(rpc.network, 'blockNumber:', blockNumber, 'logs:', logs.length, "total", total, "count", count)
       for (const log of logs) {
         await getTransactionReceipt(log.transactionHash)
       }
       blockNumber = blockNumber - 1000
     }
-    console.log('total:', total, 'count:', count)
+    console.log(rpc.network, 'total:', total, 'count:', count)
+    return { network: rpc.network, total, count }
   }
 
   async function getTransactionReceipt (hash) {
@@ -30,7 +31,7 @@ export function build (rpc, okxContract, mesonContract, blockCount) {
     if (!tx) console.log('not found', hash)
     const mesonLog = tx.logs.find(x => x.address.toLowerCase() === mesonContract)
     if (!!mesonLog) {
-      console.log('find ', ++count);
+      console.log(rpc.network,'find ', ++count);
       tx.hasMeson = true
     }
     return { tx };
