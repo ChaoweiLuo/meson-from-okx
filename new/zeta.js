@@ -8,4 +8,19 @@ const blockCount = Number(process.env.DAYS || 1) * 3600 * 24 / 6; // 6秒一个�
 
 const getLogs = build(rpc, okxContract, mesonContract, blockCount);
 
-export default getLogs()
+
+const usdt = '';
+const usdc = ''
+
+export const getUSDT = () => getLogs(usdt)
+export const getUSDC = () => getLogs(usdc)
+
+export default void async function () {
+  const usdtP = getUSDT()
+  const usdcP = getUSDC()
+  const [usdc, usdt] = await Promise.all([usdcP, usdtP])
+  return {
+    usdc,
+    usdt
+  }
+}()

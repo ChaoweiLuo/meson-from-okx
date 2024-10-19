@@ -13,7 +13,7 @@ import corePromise from './core.js';
   days > 1 ?
     console.log(`About to query data from the last ${days} days.`)
     : console.log(`About to query data from the last day.`)
-  const fileName = (new Date()).toLocaleDateString() + '.txt'
+  const fileName = (new Date()).toLocaleDateString().replaceAll('/', '') + '.txt'
   writeFile(fileName, JSON.stringify({
     manta: await mantaPromise,
     xlayer: await xlayerPromise,

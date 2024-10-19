@@ -8,4 +8,18 @@ const blockCount = Number(process.env.DAYS || 1) * 3600 * 24 / 3;
 
 const getLogs = build(rpc, okxContract, mesonContract, blockCount);
 
-export default getLogs()
+const usdt = '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58';
+const usdc = '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85'
+
+export const getUSDT = () => getLogs(usdt)
+export const getUSDC = () => getLogs(usdc)
+
+export default void async function () {
+  const usdtP = getUSDT()
+  const usdcP = getUSDC()
+  const [usdc, usdt] = await Promise.all([usdcP, usdtP])
+  return {
+    usdc,
+    usdt
+  }
+}()

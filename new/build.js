@@ -41,6 +41,8 @@ export function build (rpc, okxContract, mesonContract, blockCount) {
       return await getLogs();
     } catch (err) {
       console.error('error from ', rpc.network);
+      console.log(err);
+      return { network: rpc.network, total, count }
     }
   }
 }
