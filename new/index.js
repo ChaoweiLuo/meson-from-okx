@@ -9,6 +9,10 @@ import zetaPromise from './zeta.js';
 import corePromise from './core.js';
 
 (async () => {
+  const days = Number(process.env.DAYS || 1);
+  days > 1 ?
+    console.log(`About to query data from the last ${days} days.`)
+    : console.log(`About to query data from the last day.`)
   const fileName = (new Date()).toLocaleDateString() + '.txt'
   writeFile(fileName, JSON.stringify({
     manta: await mantaPromise,
