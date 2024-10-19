@@ -6,22 +6,17 @@ import scrollPromise from "./scroll.js";
 import avaxPromise from "./avax.js";
 import optPromise from './op-mainnet.js';
 import zetaPromise from './zeta.js';
-
-const manta = await mantaPromise;
-const xlayer = await xlayerPromise;
-const scroll = await scrollPromise;
-const avax = await avaxPromise;
-const opt = await optPromise;
-const zeta = await zetaPromise;
+import corePromise from './core.js';
 
 (async () => {
   const fileName = (new Date()).toLocaleDateString() + '.txt'
   writeFile(fileName, JSON.stringify({
-    manta,
-    xlayer,
-    scroll,
-    avax,
-    opt,
-    zeta,
+    manta: await mantaPromise,
+    xlayer: await xlayerPromise,
+    scroll: await scrollPromise,
+    avax: await avaxPromise,
+    opt: await optPromise,
+    zeta: await zetaPromise,
+    core: await corePromise,
   }, null, 2));
 })()
