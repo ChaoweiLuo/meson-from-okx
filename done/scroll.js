@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import db from './db.js'
+import db from '../getLogs/db.js'
 const col = db.collection("scroll")
 
 const rpc = { "network": "scroll", "url": "https://rpc.ankr.com/scroll", "type": "http" }
