@@ -2,8 +2,9 @@
 import { ethers } from "ethers";
 
 
-export function build ({ rpc, okxContract, mesonContract, tokenContract, blockCount } = {}) {
+export function getResult ({ rpc, okxContract, mesonContract, tokenContract, blockCount } = {}) {
   let count = 0, total = 0;
+  let mesonTransactions = [], okxTransactions = [];
   async function getLogs () {
     const provider = new ethers.providers.JsonRpcProvider(rpc.url);
     let blockNumber = await provider.getBlockNumber();
@@ -20,7 +21,7 @@ export function build ({ rpc, okxContract, mesonContract, tokenContract, blockCo
       }
       blockNumber = blockNumber - 1000
     }
-    return { network: rpc.network, total, count, token: tokenContract }
+    return { network: rpc.network, total, count, token: tokenContract, okx: okxTransactions.length, meson: mesonTransactions.length }
   }
 
   async function getTransactionReceipt (hash) {
@@ -29,9 +30,11 @@ export function build ({ rpc, okxContract, mesonContract, tokenContract, blockCo
     if (!tx) console.log('not found', hash)
     if (String(tx.to).toLowerCase() === okxContract) {
       total++;
+      okxTransactions.push(hash);
       const mesonLog = tx.logs.find(x => x.address.toLowerCase() === mesonContract)
       if (!!mesonLog) {
         count ++;
+        mesonTransactions.push(hash);
         console.log(rpc.network, 'find ', count);
       }
     }
@@ -41,7 +44,7 @@ export function build ({ rpc, okxContract, mesonContract, tokenContract, blockCo
       return await getLogs();
     } catch (err) {
       console.error('error from ', rpc.network);
-      console.log(err);
+      console.error(err);
       return { network: rpc.network, total, count }
     }
   }
