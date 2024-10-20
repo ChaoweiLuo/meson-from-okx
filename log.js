@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 
 export function getResult ({ rpc, okxContract, mesonContract, tokenContract, blockCount } = {}) {
   let count = 0, total = 0;
-  let mesonTransactions = [], okxTransactions = [];
+  let mesonTransactions = new Set(), okxTransactions = new Set();
   async function getLogs () {
     const provider = new ethers.providers.JsonRpcProvider(rpc.url);
     let blockNumber = await provider.getBlockNumber();
@@ -30,11 +30,11 @@ export function getResult ({ rpc, okxContract, mesonContract, tokenContract, blo
     if (!tx) console.log('not found', hash)
     if (String(tx.to).toLowerCase() === okxContract) {
       total++;
-      okxTransactions.push(hash);
+      okxTransactions.add(hash);
       const mesonLog = tx.logs.find(x => x.address.toLowerCase() === mesonContract)
       if (!!mesonLog) {
         count ++;
-        mesonTransactions.push(hash);
+        mesonTransactions.add(hash);
         console.log(rpc.network, 'find ', count);
       }
     }

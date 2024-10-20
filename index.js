@@ -1,4 +1,4 @@
-import { getResult } from "./log.js";
+import { getResult as getLogResult } from "./log.js";
 
 const core = {
   usdt: '0x900101d06a7426441ae63e9ab3b9b0f63be145f1',
@@ -11,7 +11,7 @@ const core = {
       blockCount: Number(process.env.DAYS || 1) * 3600 * 24 / 2,
       tokenContract
     }
-    const getResult = getResult(coreConfig);
+    const getResult = getLogResult(coreConfig);
     const result = await getResult();
     console.log('core result: ')
     console.dir(result)
@@ -29,7 +29,7 @@ const scroll = {
       blockCount: Number(process.env.DAYS || 1) * 3600 * 24 / 3,
       tokenContract,
     }
-    const getResult = getResult(config);
+    const getResult = getLogResult(config);
     const result = await getResult();
     console.log('scroll result')
     console.dir(result)
@@ -47,7 +47,7 @@ const xlayer = {
       blockCount: Number(process.env.DAYS || 1) * 3600 * 24 / 3,
       tokenContract,
     }
-    const getResult = getResult(config);
+    const getResult = getLogResult(config);
     const result = await getResult();
     console.log('xlayer result')
     console.dir(result)
@@ -65,7 +65,7 @@ const manta = {
       blockCount: Number(process.env.DAYS || 1) * 3600 * 24 / 3,
       tokenContract,
     }
-    const getResult = getResult(config);
+    const getResult = getLogResult(config);
     const result = await getResult();
     console.log('manta result')
     console.dir(result)
@@ -83,7 +83,7 @@ const opt = {
       blockCount: Number(process.env.DAYS || 1) * 3600 * 24 / 3,
       tokenContract,
     }
-    const getResult = getResult(config);
+    const getResult = getLogResult(config);
     const result = await getResult();
     console.log('opt result')
     console.dir(result)
@@ -101,7 +101,7 @@ const avax = {
       blockCount: Number(process.env.DAYS || 1) * 3600 * 24 / 2,
       tokenContract,
     }
-    const getResult = getResult(config);
+    const getResult = getLogResult(config);
     const result = await getResult();
     console.log('avax result')
     console.dir(result)
