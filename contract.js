@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-async function getResult ({ token, mesonContract, okxContract, rpc, blockCount } = {}) {
+export async function getResult ({ token, mesonContract, okxContract, rpc, blockCount } = {}) {
   console.time('start')
   const provider = new ethers.providers.JsonRpcProvider(rpc.url);
   const abi = [
@@ -54,4 +54,4 @@ const xlayer = {
   }
 }
 
-await xlayer.getResult(xlayer.usdt)
+// await xlayer.getResult(xlayer.usdt)
