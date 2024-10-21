@@ -1,7 +1,8 @@
 import { ethers } from "ethers";
 import { createWriteStream } from 'fs';
-const stream = createWriteStream('list2.json', { flags: 'a' });
-const list = []
+const stream = createWriteStream('list.json', { flags: 'a' });
+
+const list = [];
 export async function getResult ({ token, mesonContract, okxContract, rpc, blockCount } = {}) {
   console.time('start')
   const provider = new ethers.providers.JsonRpcProvider(rpc.url);
@@ -13,7 +14,7 @@ export async function getResult ({ token, mesonContract, okxContract, rpc, block
 
   const contract = new ethers.Contract(token, abi, provider);
 
-  const filter = contract.filters.Transfer(null, okxContract);
+  const filter = contract.filters.Transfer(null, null);
   let total = 0, count = 0;
   let blockNumber = await provider.getBlockNumber();
   let minBlockNumber = blockNumber - blockCount;
@@ -21,10 +22,11 @@ export async function getResult ({ token, mesonContract, okxContract, rpc, block
     const events = await contract.queryFilter(filter, Math.max(minBlockNumber, blockNumber - 1000), blockNumber);
     console.log('blockNumber:', blockNumber, 'events:', events.length, "total", total, "count", count)
     for (const event of events) {
-      list.push(event.transactionHash)
       const receipt = await event.getTransactionReceipt();
       if (!receipt) { continue }
       if (String(receipt.to).toLowerCase() === okxContract) {
+        stream.write(receipt.transactionHash + '\n');
+        console.log('okx', list)
         total++;
         const mesonLog = receipt.logs.find(x => x.address.toLowerCase() === mesonContract);
         if (!!mesonLog) {
