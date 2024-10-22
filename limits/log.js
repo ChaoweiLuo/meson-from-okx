@@ -4,9 +4,6 @@ import { createWriteStream } from "fs";
 import { writeFile } from 'fs/promises'
 
 
-let total = 0, toOkxCount = 0, hasTokenLogCount = 0, hasOkxLogCount = 0, toOkx_hasTokenLog_count = 0, error_count = 0;
-const list = [];
-const withTokenMap = {};
 
 export const topics = [
   '0xf6481cbc1da19356c5cb6b884be507da735b89f21dc4bbb7c9b7cc0968b03b7a',
@@ -14,6 +11,10 @@ export const topics = [
 ]
 export async function getResult ({ token, rpc, okxContract, mesonContract, endBlock, startBlock, withTopic } = {}) {
 
+  let total = 0, toOkxCount = 0, hasTokenLogCount = 0, hasOkxLogCount = 0, toOkx_hasTokenLog_count = 0, errorCount = 0;
+  const list = [];
+  const withTokenMap = {};
+  
   const provider = new ethers.providers.JsonRpcProvider(rpc.url);
   let currentBlock = endBlock;
   while (currentBlock > startBlock) {
@@ -35,7 +36,7 @@ export async function getResult ({ token, rpc, okxContract, mesonContract, endBl
     const provider = new ethers.providers.JsonRpcProvider(rpc.url);
     const receipt = await provider.getTransactionReceipt(log.transactionHash)
     if (!receipt) {
-      error_count++;
+      errorCount++;
       return console.log('not found', log.transactionHash)
     }
     const tokenLog = receipt.logs.find(log => log.address.toLowerCase() === token)
@@ -65,6 +66,6 @@ export async function getResult ({ token, rpc, okxContract, mesonContract, endBl
   const listFileName = `log-list-${Date.now()}.json`, statsFileName = `log-stats-${Date.now()}.json`;
   createWriteStream(listFileName).write(JSON.stringify(list))
   createWriteStream(statsFileName).write(JSON.stringify(withTokenMap))
-  return { total, hasTokenLogCount, error_count, toOkxCount, hasOkxLogCount, toOkx_hasTokenLog_count }
+  return { total, hasTokenLogCount, error_count: errorCount, toOkxCount, hasOkxLogCount, toOkx_hasTokenLog_count }
 }
 

@@ -1,47 +1,58 @@
 import { ethers } from "ethers";
-import db from '../db.js';
-const col = db.collection('limit-contract-1');
-let total = 0;
-export async function getResult ({ token, okxContract, mesonContract, rpc, blockCount, blockNumber = 5632448 } = {}) {
-  console.time('contract.0')
+import { createWriteStream } from 'fs';
+
+export async function getResult ({ token, okxContract, rpc, startBlock, endBlock = 5632448 } = {}) {
+  let total = 0, toOkxCount = 0, hasOkxLogCount = 0, errorCount = 0;
+  const list = [];
+  const methodMap = {};
+
   const provider = new ethers.providers.JsonRpcProvider(rpc.url);
   const abi = [
     "function balanceOf(address) view returns (uint256)",
     "function Transfer(address from, address to, uint256 amount)",
     "event Transfer(address indexed from, address indexed to, uint256 amount)"
   ];
-  
+
   const contract = new ethers.Contract(token, abi, provider);
   const filter = contract.filters.Transfer(null, null);
-  let minBlockNumber = blockNumber - blockCount;
-  while (blockNumber > minBlockNumber) {
-    const events = await contract.queryFilter(filter, Math.max(minBlockNumber, blockNumber - 1000), blockNumber);
-    total += events.length
-    console.log('blockNumber:', blockNumber, 'events:', events.length, total)
+  let currentBlock = endBlock;
+  while (currentBlock > startBlock) {
+    const events = await contract.queryFilter(filter, Math.max(startBlock, currentBlock - 1000), currentBlock);
+    total += events.length;
+    console.log('blockNumber:', currentBlock, 'events:', events.length, total)
     for (const event of events) {
-      await handleEvent(event);
+      await handleEvent(event)
     }
-    blockNumber = blockNumber - 1000
+    currentBlock = currentBlock - 1000
   }
 
   async function handleEvent (event) {
-    let receipt = await col.findOne({ transactionHash: event.transactionHash })
+    const rps = event.getTransactionReceipt();
+    const tps = event.getTransaction()
+    const [receipt, tx] = await Promise.all([rps, tps]);
     if (!receipt) {
-      receipt = await event.getTransactionReceipt();
-      if (!receipt) { return; }
-      if (String(receipt.to).toLowerCase() === okxContract) {
-        receipt.isToOkx = true;
-      }
-      if (receipt.logs?.find(log => log.address.toLowerCase() === okxContract)) {
-        receipt.isOkxLog = true;
-      }
-      if (receipt.logs?.find(log => log.address.toLowerCase() === mesonContract)) {
-        receipt.isMesonLog = true
-      }
-      console.log('contract.1', receipt.isToOkx, receipt.isOkxLog)
-      if (receipt.isToOkx || receipt.isOkxLog) await col.insertOne(receipt);
+      errorCount++;
+      return;
+    }
+    if (String(receipt.to).toLowerCase() === okxContract) {
+      receipt.isToOkx = true;
+      toOkxCount++;
+      const method = tx.data.slice(0, 10);
+      methodMap[method] = methodMap[method] || []
+      methodMap[method].push({
+        hash: event.transactionHash,
+        hasOkxLog: receipt.hasOkxLog,
+        isToOkx: receipt.isToOkx
+      })
+      receipt.method = method;
+    }
+    if (receipt.logs?.find(log => log.address.toLowerCase() === okxContract)) {
+      receipt.hasOkxLog = true;
+      hasOkxLogCount++;
     }
 
+    list.push(receipt)
   }
-  return total;
+
+  return { total, toOkxCount, hasOkxLogCount, methodMap, list }
 }
