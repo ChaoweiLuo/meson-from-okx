@@ -16,7 +16,7 @@ export async function getResult ({ token, mesonContract, okxContract, rpc, block
 
   const filter = contract.filters.Transfer(null, null);
   let total = 0, count = 0;
-  let blockNumber = 5858843 //await provider.getBlockNumber();
+  let blockNumber = 5632448 //await provider.getBlockNumber();
   let minBlockNumber = blockNumber - blockCount;
   while (blockNumber > minBlockNumber) {
     const events = await contract.queryFilter(filter, Math.max(minBlockNumber, blockNumber - 1000), blockNumber);
@@ -24,9 +24,10 @@ export async function getResult ({ token, mesonContract, okxContract, rpc, block
     for (const event of events) {
       const receipt = await event.getTransactionReceipt();
       if (!receipt) { continue }
-      if (String(receipt.to).toLowerCase() === okxContract) {
+      if (String(receipt.to).toLowerCase() === okxContract || receipt.logs.find(x => x.address.toLowerCase() === okxContract)) {
         list.add(event.transactionHash)
         total++;
+        console.log('receipt', receipt)
         const mesonLog = receipt.logs.find(x => x.address.toLowerCase() === mesonContract);
         if (!!mesonLog) {
           count++;
@@ -51,7 +52,7 @@ const xlayer = {
       rpc: { network: 'xlayer', url: 'https://xlayerrpc.okx.com', type: 'http' },
       okxContract: '0x5965851f21dae82ea7c62f87fb7c57172e9f2add'.toLowerCase(),
       mesonContract: '0x25aB3Efd52e6470681CE037cD546Dc60726948D3'.toLowerCase(),
-      blockCount: Number(process.env.DAYS || 1) * 3600 * 24 / 3,
+      blockCount: 1, // Number(process.env.DAYS || 1) * 3600 * 24 / 3,
       token,
     }
     const result = await getResult(config);
@@ -60,4 +61,4 @@ const xlayer = {
   }
 }
 
-await xlayer.getResult(xlayer.usdc)
+await xlayer.getResult(xlayer.usdt)

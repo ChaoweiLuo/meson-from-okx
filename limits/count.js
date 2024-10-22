@@ -1,0 +1,47 @@
+import { ethers } from "ethers";
+import { xlayer } from '../config.js';
+
+const hashs = [
+  '0x073ea6207c96d60f26560f90edde48e0cc0410350f80fb671931abeff68e084d',
+  '0x07ebf5809af15155ac2a9e7c32e1ff33c2f43354c2db47865cd6c07ed503ac9a',
+  '0x0ba364b9d8900446748c1c6ea9e53e942cae065e97a0aeb6f9a5ffb6291f8977',
+  '0x10300e5788a55c0069a62222a54ef01f3c2d3b79b22ba2dd058a1c5567999e52',
+  '0x1e17c485a65373ac9fce3316254882e82721c0e2dccbf11a278c3ab19559797b',
+  '0x29253f56a4cc6b66a1e8fafd0810b1c1eec490c87ebb2a376516fd7a1cac9143',
+  '0x29d5b9f48b8c38245479babffdc26137f7b30ed8bab078942255b33b32997c0a',
+  '0x2e0772faae702cf0e0f2812067e63d204c9c9128663ac5d3ef1a457180e8056a',
+  '0x2e1cc6b1a8882146d88af437cf2700ef2b82129140f49addbd58186f63999a60',
+  '0x33f326b0a9079444f801218cc37b17ba1d073fb5e50f53f890c35b7431d4e865',
+  '0x40405b5d06830879aca0a7f00170276c78b9e93afc61d823c195cd1d1f036444',
+  '0x4b44f67d3ef84da2c35f4f35f76546be49686953a3b7807e58e8434a816dc3d9',
+  '0x8135047906fe43ee669a2be6b1043d2d56532049918fb89162da5dd463310565',
+  '0x9a1cd22989c0c8203fdbbb5baa3eadb0223c168482943102f4a478344b0dd641',
+  '0xa82e6587aca49c99ee8eb457094cbe26865954f31cc9985f95e254b0169c53ff',
+  '0xad6341c2ec2b02383c7e75bd8ee282f5fad667e4842227357a5c0022a5a84e4b',
+  '0xb64d8e210e739d29b4f7bfd60e2976b49783ddf188e99701f5ade88dc5316dd7',
+  '0xc3a2db2b2ffd5b186ef2051ebd7067ada3fb7e7e419bc20bf74e8d045a1fdc22',
+  '0xc8c5c50176dfeb16f81f1bc9f20cdf35a2425c0a00cce54fac7f6781982e312e',
+  '0xd94443a34735db428edb418dc42991353aaf1a6caf819dbac8e53825462cea89',
+  '0xf31af29cef590aef80b217cb250ca4a661235c58e7f1a4a6237d70ce1906da09',
+  '0xf337a1179ec2a941bfc9f538f573e0c567da76bb0022a419d4936ff6d0186e23',
+  '0xff6294f3b2178abf1567f2e360df735db2928527a992d0be4739cf8f021eaa91'
+]
+
+const provider = new ethers.providers.JsonRpcProvider(xlayer.rpc.url)
+const hs = {}
+
+for (const hash of hashs) {
+  const t = await provider.getTransaction(hash);
+  const m = t.data.slice(0, 10)
+  hs[m] = hs[m] || []
+  hs[m].push(t.hash)
+}
+
+console.log(hs)
+
+for (const key in hs) {
+  if (Object.prototype.hasOwnProperty.call(hs, key)) {
+    const a = hs[key];
+    console.log(key, a.length)
+  }
+}
