@@ -9,12 +9,12 @@ export const topics = [
   '0xf6481cbc1da19356c5cb6b884be507da735b89f21dc4bbb7c9b7cc0968b03b7a',
   '0xb9dae57db52a734b183c77227c96068231beb6a93a060ca7a9d3164f716714ea'
 ]
-export async function getResult ({ token, rpc, okxContract, mesonContract, endBlock, startBlock, withTopic } = {}) {
+export async function getResult ({ token, rpc, okxContract, endBlock, startBlock, topic } = {}) {
 
   let total = 0, toOkxCount = 0, hasTokenLogCount = 0, hasOkxLogCount = 0, toOkx_hasTokenLog_count = 0, errorCount = 0;
   const list = [];
-  const withTokenMap = {};
-  
+  const methodMap = {};
+
   const provider = new ethers.providers.JsonRpcProvider(rpc.url);
   let currentBlock = endBlock;
   while (currentBlock > startBlock) {
@@ -22,7 +22,7 @@ export async function getResult ({ token, rpc, okxContract, mesonContract, endBl
       fromBlock: Math.max(startBlock, currentBlock - 1000),
       toBlock: currentBlock,
       address: okxContract,
-      topics: [withTopic]
+      topics: [topic]
     })
     list.push(...logs);
     total += logs.length;
@@ -50,22 +50,19 @@ export async function getResult ({ token, rpc, okxContract, mesonContract, endBl
       if (isToOkx) toOkx_hasTokenLog_count++;
       const tx = await provider.getTransaction(log.transactionHash);
       const method = tx.data.slice(0, 10);
-      withTokenMap[method] = withTokenMap[method] || [];
+      methodMap[method] = methodMap[method] || [];
       const item = {
         hash: log.transactionHash,
         isToOkx,
         hasOkxLog: !!okxLog
       }
-      withTokenMap[method].push(item);
+      methodMap[method].push(item);
       receipt.method = method;
     }
     if (isToOkx) toOkxCount++;
     if (!!okxLog) hasOkxLogCount++;
   }
 
-  const listFileName = `log-list-${Date.now()}.json`, statsFileName = `log-stats-${Date.now()}.json`;
-  createWriteStream(listFileName).write(JSON.stringify(list))
-  createWriteStream(statsFileName).write(JSON.stringify(withTokenMap))
   return { total, hasTokenLogCount, error_count: errorCount, toOkxCount, hasOkxLogCount, toOkx_hasTokenLog_count }
 }
 

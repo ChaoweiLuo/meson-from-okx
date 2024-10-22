@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import { createWriteStream } from 'fs';
 
 export async function getResult ({ token, okxContract, rpc, startBlock, endBlock = 5632448 } = {}) {
   let total = 0, toOkxCount = 0, hasOkxLogCount = 0, errorCount = 0;
