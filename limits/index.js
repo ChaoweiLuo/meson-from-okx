@@ -3,18 +3,6 @@ import { getResult as getContract1Result } from './contract.1.js';
 import { getResult as getLogResult, topics } from './log.js';
 import { avax, core, manta, opt, scroll, xlayer } from '../config.js';
 import { createWriteStream } from 'fs';
-import inquirer from 'inquirer';
-function getChain (chainName) {
-  switch (chainName) {
-    case 'xlayer': return xlayer;
-    case 'manta': return manta;
-    case 'opt': return opt;
-    case 'scroll': return scroll;
-    case 'core': return core;
-    case 'avax': return avax;
-    default: throw new Error('Invaid chain.')
-  }
-}
 
 const modes = {
   a: '使用token的queryFilter查询日志，参数为Transfer(null, null)',
@@ -23,7 +11,6 @@ const modes = {
   d: '使用getLogs查询日志,参数为{address: okxContract, topics: ["0xf6481cbc1da19356c5cb6b884be507da735b89f21dc4bbb7c9b7cc0968b03b7a"]}',
   e: '使用getLogs查询日志,参数为{address: okxContract, topics: ["0xb9dae57db52a734b183c77227c96068231beb6a93a060ca7a9d3164f716714ea"]}',
 }
-const chains = ['xlayer', 'manta', 'opt', 'scroll', 'core', 'avax'];
 const methodCode = {
   '0x972250fe': 'bridgeToV2',
   '0x3eee9156': 'claim',
@@ -31,19 +18,18 @@ const methodCode = {
 }
 
 async function main () {
-
   const args = {
     chain: xlayer,
-    startBlock: 5611448,
+    startBlock: 5602448,
     endBlock: 5612448,
     token: xlayer.tokens.usdc,
     mode: modes.a
   }
 
-  await call(args.mode, args.chain, args.token, args.startBlock, args.endBlock);
+  await call(args);
   
 
-  async function call (mode, chain, token, startBlock, endBlock) {
+  async function call ({mode, chain, token, startBlock, endBlock} = {}) {
     let result;
     switch (mode) {
       case modes.a: result = await getContract1Result({ ...chain, token, startBlock, endBlock }); break;
