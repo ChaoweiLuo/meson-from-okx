@@ -53,7 +53,7 @@ export async function getResult ({ token, rpc, okxContract, endBlock, startBlock
       const item = {
         hash: log.transactionHash,
         "to=okx": isToOkx,
-        "ogs.includes(okx)": !!okxLog
+        "logs.includes(okx)": !!okxLog
       }
       methodMap[method].push(item);
       receipt.method = method;

@@ -27,9 +27,11 @@ async function main () {
   }
 
   await call(args);
-  
 
-  async function call ({mode, chain, token, startBlock, endBlock} = {}) {
+
+  async function call ({ mode, chain, token, startBlock, endBlock } = {}) {
+    const m = Object.entries(modes).find(([q, w]) => w === mode)[0]
+    const ts = Date.now();
     let result;
     switch (mode) {
       case modes.a: result = await getContract1Result({ ...chain, token, startBlock, endBlock }); break;
@@ -40,10 +42,8 @@ async function main () {
       default: break;
     }
     const { list, methodMap, ...logCounts } = result;
-    console.log("mode is ", mode, "count is", logCounts);
-    const m = Object.entries(modes).find(([q,w]) => w === mode)[0]
-    const listFileName = `log-${m}-${chain.rpc.network}-${token}-logs-${Date.now()}.json`;
-    const methodFileName = `log-${m}-${chain.rpc.network}-${token}-methods-${Date.now()}.json`;
+    const listFileName = `log-${m}-${chain.rpc.network}-logs-${Date.now()}.json`;
+    const methodFileName = `log-${m}-${chain.rpc.network}-methods-${Date.now()}.json`;
     createWriteStream(listFileName).write(JSON.stringify(list, null, 2));
     const map = {};
     for (const c in methodMap) {
@@ -53,8 +53,12 @@ async function main () {
       }
     }
     createWriteStream(methodFileName).write(JSON.stringify(map, null, 2));
-    console.log('Receipt saved in ', listFileName);
-    console.log('Method map data saved in ', methodFileName);
+    console.log("Mode is: ", m);
+    console.log("Count is: ", logCounts);
+    console.log('Time used: ', (Date.now() - ts) / 1000, 's');
+    console.log('Block count: ', endBlock - startBlock + 1);
+    console.log('Receipts saved in: ', listFileName);
+    console.log('Method map saved in: ', methodFileName);
   }
 }
 void main()
