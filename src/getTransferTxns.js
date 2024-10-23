@@ -26,6 +26,8 @@ export async function getTransferTxns ({ token, okxContract, rpc, startBlock, en
   }
 
   async function handleEvent (event) {
+    // 存在重复查询出同一笔交易的情况
+    if (receiptList.find(x => x.transactionHash === event.transactionHash)) return;
     const rps = event.getTransactionReceipt();
     const tps = event.getTransaction()
     const [receipt, tx] = await Promise.all([rps, tps]);

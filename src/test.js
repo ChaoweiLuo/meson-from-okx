@@ -1,9 +1,17 @@
 import load from './load.js';
+import check from './check.js';
 
-await load({
-  chainName: 'xlayer', 
-  tokenName: 'usdc', 
+const args = {
+  chainName: 'xlayer',
+  tokenName: 'usdc',
   startBlock: 5602448,
   endBlock: 5612448,
-  mode: 'c'
-})
+  mode: 'b'
+}
+
+const modes = ['a', 'b', 'c', 'd', 'e']
+for (const mode of modes) {
+  // await load({ ...args, mode})
+}
+
+check(args)

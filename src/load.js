@@ -23,11 +23,12 @@ export default async function load ({ mode, chainName, tokenName, startBlock, en
     case "e": result = await getOkxTxns({ ...chain, token, startBlock, endBlock, topic: topicMap.bridgeToV2 }); break;
     default: break;
   }
-  const { receiptList, txHashByMethods, counts } = result;
-  const listFileName = `mode_${mode}_receipt_list_${chainName}_${tokenName}-${startBlock}-${endBlock}.json`;
-  const methodFileName = `mode_${mode}_tx_hash_by_methods_${chainName}_${tokenName}-${startBlock}-${endBlock}.json`;
-  createWriteStream(listFileName).write(JSON.stringify(receiptList, null, 2));
+  const { noneReceiptHashList, receiptList, txHashByMethods, counts } = result;
+  const receiptListFileName = `mode_${mode}_receipt_list_${chainName}_${tokenName}-${startBlock}-${endBlock}.json`;
+  const txHashByMethodsFileName = `mode_${mode}_tx_hash_by_methods_${chainName}_${tokenName}-${startBlock}-${endBlock}.json`;
+  createWriteStream(receiptListFileName).write(JSON.stringify(receiptList, null, 2));
   const map = {};
+  const mapCount = {}
   for (const c in txHashByMethods) {
     if (Object.prototype.hasOwnProperty.call(txHashByMethods, c)) {
       const values = txHashByMethods[c];
@@ -36,12 +37,26 @@ export default async function load ({ mode, chainName, tokenName, startBlock, en
       else map[c] = values;
     }
   }
-  createWriteStream(methodFileName).write(JSON.stringify(map, null, 2));
+  for (const c in map) {
+    mapCount[c] = map[c].length
+  }
+  createWriteStream(txHashByMethodsFileName).write(JSON.stringify(map, null, 2));
+  const countsFileName = `mode_${mode}_count_${chainName}_${tokenName}-${startBlock}-${endBlock}.json`;
+  createWriteStream(countsFileName).write(JSON.stringify(counts, null, 2));
+
   console.log("Mode is: ", mode);
   console.log("The count is: ");
   console.table(counts);
+  console.log('The txHashByMethods count is: ');
+  console.table(mapCount);
   console.log('Time used: ', (Date.now() - ts) / 1000, 's');
   console.log('Block count: ', endBlock - startBlock + 1);
-  console.log('Receipts saved in: ', listFileName);
-  console.log('Method map saved in: ', methodFileName);
+  console.log('The counts saved in: ', countsFileName)
+  console.log('The receiptList saved in: ', receiptListFileName);
+  console.log('The txHashByMethods saved in: ', txHashByMethodsFileName);
+  if (noneReceiptHashList.length > 0) {
+    const noneFileName = `mode_${mode}_none_receipt_hash_list_${chainName}_${tokenName}-${startBlock}-${endBlock}.json`;
+    createWriteStream(noneFileName).write(JSON.stringify(noneReceiptHashList, null, 2));
+    console.warn('None receipt hash list saved in: ', noneFileName);
+  }
 }
