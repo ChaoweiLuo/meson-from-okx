@@ -16,9 +16,9 @@ export default async function check (args = {}) {
     const fileContent = await readFile(countsFileName);
     const counts = JSON.parse(fileContent);
     if (counts.total === counts.toOkxCount) {
-      console.warn('验证失败：Transfer(null,okx)，加不加receipt.to=okx数量不一致。')
-    } else {
       console.log('验证通过：Transfer(null,okx)，加不加receipt.to=okx数量都一样。')
+    } else {
+      console.warn('验证失败：Transfer(null,okx)，加不加receipt.to=okx数量不一致。')
     }
   }
 
