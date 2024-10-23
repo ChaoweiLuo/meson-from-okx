@@ -18,7 +18,6 @@ export async function getResult ({ token, okxContract, rpc, startBlock, endBlock
   while (currentBlock > startBlock) {
     const events = await contract.queryFilter(filter, Math.max(startBlock, currentBlock - 1000), currentBlock);
     total += events.length;
-    console.log('blockNumber:', currentBlock, 'events:', events.length, total)
     for (const event of events) {
       await handleEvent(event)
     }

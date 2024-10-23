@@ -16,7 +16,7 @@ function getChain (chainName) {
   }
 }
 
-const mode = {
+const modes = {
   a: '使用token的queryFilter查询日志，参数为Transfer(null, null)',
   b: '使用token的queryFilter查询日志，参数为Transfer(null, okxContract)',
   c: '使用getLogs查询日志,参数为{address: okxContract}',
@@ -31,68 +31,34 @@ const methodCode = {
 }
 
 async function main () {
-  const answers = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'mode',
-      message: 'Which method do you want to use for querying?',
-      choices: Object.values(mode)
-    },
-    {
-      type: 'list',
-      name: 'chain',
-      message: 'Which chain do you want to query?',
-      choices: chains
-    },
-  ])
-  const chain = getChain(answers.chain);
-  const tokens = Object.keys(chain.tokens);
-  const restAnswers = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'token',
-      message: 'Which token do you want to query?',
-      choices: tokens
-    },
-    {
-      type: 'input',
-      name: 'startBlock',
-      message: 'What is the startBlock number?',
-    },
-    {
-      type: 'input',
-      name: 'endBlock',
-      message: 'What is the endBlock number?',
-    },
-  ])
 
   const args = {
-    ...answers,
-    ...restAnswers,
-    ...chain,
-    startBlock: +restAnswers.startBlock,
-    endBlock: +restAnswers.endBlock,
-    token: chain.tokens[restAnswers.token]
+    chain: xlayer,
+    startBlock: 5611448,
+    endBlock: 5612448,
+    token: xlayer.tokens.usdc,
+    mode: modes.a
   }
 
-  await call(args);
+  await call(args.mode, args.chain, args.token, args.startBlock, args.endBlock);
+  
 
-  async function call (args) {
+  async function call (mode, chain, token, startBlock, endBlock) {
     let result;
-    switch (args.mode) {
-      case mode.a: result = await getContract1Result(args); break;
-      case mode.b: result = await getContract0Result(args); break;
-      case mode.c: result = await getLogResult({ ...args }); break;
-      case mode.d: result = await getLogResult({ ...args, topic: topics[0] }); break;
-      case mode.e: result = await getLogResult({ ...args, topic: topics[1] }); break;
+    switch (mode) {
+      case modes.a: result = await getContract1Result({ ...chain, token, startBlock, endBlock }); break;
+      case modes.b: result = await getContract0Result({ ...chain, token, startBlock, endBlock }); break;
+      case modes.c: result = await getLogResult({ ...chain, token, startBlock, endBlock }); break;
+      case modes.d: result = await getLogResult({ ...chain, token, startBlock, endBlock, topic: topics[0] }); break;
+      case modes.e: result = await getLogResult({ ...chain, token, startBlock, endBlock, topic: topics[1] }); break;
       default: break;
     }
     const { list, methodMap, ...logCounts } = result;
-    console.log(logCounts)
-    const m = Object.entries(mode).find(([q,w]) => w === answers.mode)[0]
-    const listFileName = `log-${m}-${answers.chain}-${restAnswers.token}-logs-${Date.now()}.json`;
-    const methodFileName = `log-${m}-${answers.chain}-${restAnswers.token}-methods-${Date.now()}.json`;
-    createWriteStream(listFileName).write(JSON.stringify(list))
+    console.log("mode is ", mode, "count is", logCounts);
+    const m = Object.entries(modes).find(([q,w]) => w === mode)[0]
+    const listFileName = `log-${m}-${chain.rpc.network}-${token}-logs-${Date.now()}.json`;
+    const methodFileName = `log-${m}-${chain.rpc.network}-${token}-methods-${Date.now()}.json`;
+    createWriteStream(listFileName).write(JSON.stringify(list, null, 2));
     const map = {};
     for (const c in methodMap) {
       if (Object.prototype.hasOwnProperty.call(methodMap, c)) {
@@ -100,17 +66,11 @@ async function main () {
         map[methodCode[c]] = values;
       }
     }
-    createWriteStream(methodFileName).write(JSON.stringify(map));
+    createWriteStream(methodFileName).write(JSON.stringify(map, null, 2));
     console.log('Receipt saved in ', listFileName);
     console.log('Method map data saved in ', methodFileName);
   }
 }
 void main()
 
-function getDateString() {
-  const date = new Date()
-  const y = date.getUTCFullYear(),
-    m = date.getUTCMonth(),
-    d = date.getUTCDate();
-  return `${y}-${m}-${d}`;
-}
+

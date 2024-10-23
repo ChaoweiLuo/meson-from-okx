@@ -26,7 +26,6 @@ export async function getResult ({ token, rpc, okxContract, endBlock, startBlock
     })
     list.push(...logs);
     total += logs.length;
-    console.log('log', total)
     for (const log of logs) {
       await handleLog(log)
     }
