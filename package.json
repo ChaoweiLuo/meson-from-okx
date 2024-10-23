@@ -10,6 +10,6 @@
   },
   "type": "module",
   "scripts": {
-    "start": "node src/test.js"
+    "start": "node src/index.js"
   }
 }

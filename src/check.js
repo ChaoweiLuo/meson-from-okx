@@ -22,7 +22,6 @@ export default async function check (args = {}) {
     }
   }
 
-  await checkTransferTxnsIsEqualToOkx()
 
   // 2. Transfer(null,null)结果是否都包含Transfer(null,okx)？
   async function checkTransferNullContainsTransferToOkx () {
@@ -49,7 +48,6 @@ export default async function check (args = {}) {
     }
   }
 
-  await checkTransferNullContainsTransferToOkx()
 
   // 3. 查出来的方法是不是只有已知的那三种？
   async function checkMethods () {
@@ -69,6 +67,10 @@ export default async function check (args = {}) {
     } else {
       console.log("验证通过：查出来的方法只有已知的那三种。");
     }
+    return notKnowMethods;
   }
+
+  await checkTransferTxnsIsEqualToOkx()
+  await checkTransferNullContainsTransferToOkx()
   await checkMethods()
 }
