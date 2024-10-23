@@ -23,7 +23,7 @@ async function main () {
     startBlock: 5602448,
     endBlock: 5612448,
     token: xlayer.tokens.usdc,
-    mode: modes.a
+    mode: modes.e
   }
 
   await call(args);
