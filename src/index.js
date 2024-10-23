@@ -9,9 +9,11 @@ const args = {
   mode: 'b'
 }
 
+await load(args)
+
 const modes = ['a', 'b', 'c', 'd', 'e']
 for (const mode of modes) {
   // await load({ ...args, mode})
 }
 
-await check(args)
+// await check(args)

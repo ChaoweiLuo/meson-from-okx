@@ -44,11 +44,15 @@ export default async function load ({ mode, chainName, tokenName, startBlock, en
   const countsFileName = `mode_${mode}_count_${chainName}_${tokenName}-${startBlock}-${endBlock}.json`;
   createWriteStream(countsFileName).write(JSON.stringify(counts, null, 2));
 
-  console.log("Mode is: ", mode);
+  console.log("Mode:", mode, ',chain:', chainName, ',token:', tokenName, ',startBlock:', startBlock, ',endBlock:', endBlock);
   console.log("The count is: ");
-  console.table(counts);
+  for (const k in counts) {
+    console.log(' ', `${k}:`, counts[k]);
+  }
   console.log('The txHashByMethods count is: ');
-  console.table(mapCount);
+  for (const m in map) {
+    console.log(' ', `${m}:`, map[m].length);
+  }
   console.log('Time used: ', (Date.now() - ts) / 1000, 's');
   console.log('Block count: ', endBlock - startBlock + 1);
   console.log('The counts saved in: ', countsFileName)
