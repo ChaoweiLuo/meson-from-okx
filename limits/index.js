@@ -101,6 +101,16 @@ async function main () {
       }
     }
     createWriteStream(methodFileName).write(JSON.stringify(map));
+    console.log('Receipt saved in ', listFileName);
+    console.log('Method map data saved in ', methodFileName);
   }
 }
 void main()
+
+function getDateString() {
+  const date = new Date()
+  const y = date.getUTCFullYear(),
+    m = date.getUTCMonth(),
+    d = date.getUTCDate();
+  return `${y}-${m}-${d}`;
+}

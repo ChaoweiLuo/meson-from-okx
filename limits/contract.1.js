@@ -34,6 +34,10 @@ export async function getResult ({ token, okxContract, rpc, startBlock, endBlock
       errorCount++;
       return;
     }
+    if (receipt.logs?.find(log => log.address.toLowerCase() === okxContract)) {
+      receipt.hasOkxLog = true;
+      hasOkxLogCount++;
+    }
     if (String(receipt.to).toLowerCase() === okxContract) {
       receipt.isToOkx = true;
       toOkxCount++;
@@ -41,14 +45,10 @@ export async function getResult ({ token, okxContract, rpc, startBlock, endBlock
       methodMap[method] = methodMap[method] || []
       methodMap[method].push({
         hash: event.transactionHash,
-        hasOkxLog: receipt.hasOkxLog,
-        isToOkx: receipt.isToOkx
+        "ogs.includes(okx)": receipt.hasOkxLog,
+        "to=okx": receipt.isToOkx
       })
       receipt.method = method;
-    }
-    if (receipt.logs?.find(log => log.address.toLowerCase() === okxContract)) {
-      receipt.hasOkxLog = true;
-      hasOkxLogCount++;
     }
 
     list.push(receipt)
