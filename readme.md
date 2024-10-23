@@ -1,4 +1,4 @@
-## 使用说明
+## use
 
 ```bash
 npm start

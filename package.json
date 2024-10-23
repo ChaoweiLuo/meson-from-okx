@@ -10,6 +10,6 @@
   },
   "type": "module",
   "scripts": {
-    "start": "node limits/index.js"
+    "start": "node src/index.js"
   }
 }

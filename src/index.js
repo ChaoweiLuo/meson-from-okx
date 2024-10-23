@@ -1,7 +1,7 @@
 import { getResult as getContract0Result } from './contract.0.js';
 import { getResult as getContract1Result } from './contract.1.js';
 import { getResult as getLogResult, topics } from './log.js';
-import { avax, core, manta, opt, scroll, xlayer } from '../config.js';
+import { avax, core, manta, opt, scroll, xlayer } from './config.js';
 import { createWriteStream } from 'fs';
 
 const modes = {
