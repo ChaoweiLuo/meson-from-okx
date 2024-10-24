@@ -21,17 +21,18 @@ export async function getOkxTxns ({ token, rpc, okxContract, endBlock, startBloc
       address: okxContract,
       topics: [topic]
     })
-    receiptList.push(...logs);
-    total += logs.length;
     for (const log of logs) {
       await handleLog(log)
     }
     currentBlock = currentBlock - 1000
   }
   async function handleLog (log) {
+    if(receiptList.find(x => x.transactionHash === log.transactionHash)) return;
+    total++;
     const provider = new ethers.providers.JsonRpcProvider(rpc.url);
     const receipt = await provider.getTransactionReceipt(log.transactionHash)
     if (!receipt) return noneReceiptHashList.push(log.transactionHash);
+    receiptList.push(receipt);
     const tokenLog = receipt.logs.find(log => log.address.toLowerCase() === token)
     const isToOkx = receipt.to.toLowerCase() === okxContract;
     const okxLog = receipt.logs.find(log => log.address.toLowerCase() === okxContract)

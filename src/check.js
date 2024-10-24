@@ -10,6 +10,12 @@ export default async function check (args = {}) {
   const getTxHashByMethodsFileName = (mode) => {
     return `mode_${mode}_tx_hash_by_methods_${args.chainName}_${args.tokenName}-${args.startBlock}-${args.endBlock}.json`;
   }
+
+  function getListFileName (mode) {
+    //mode_b_receipt_list_xlayer_usdc-5602448-5612448
+    return `mode_${mode}_receipt_list_${args.chainName}_${args.tokenName}-${args.startBlock}-${args.endBlock}.json`;
+  }
+
   // 1. 对于Transfer(null,okx)，加不加receipt.to=okx是否都一样？ b
   async function checkTransferTxnsIsEqualToOkx () {
     const countsFileName = getCountsFileName('b');
@@ -18,7 +24,16 @@ export default async function check (args = {}) {
     if (counts.total === counts.toOkxCount) {
       console.log('验证通过：Transfer(null,okx)，加不加receipt.to=okx数量都一样。')
     } else {
+      const listFileName = getListFileName('b');
+      const listFileContent = await readFile(listFileName, { encoding: 'utf8' });
+      const list = JSON.parse(listFileContent);
+      const faildList = [];
+      for (const item of list) {
+        if (!item.isToOkx) faildList.push(item.transactionHash);
+      }
       console.warn('验证失败：Transfer(null,okx)，加不加receipt.to=okx数量不一致。')
+      console.log("The faild list is: ");
+      console.table(faildList);
     }
   }
 
@@ -92,9 +107,34 @@ export default async function check (args = {}) {
     if (transferNullCounts.total === getLogsCounts.hasTokenLogCount) {
       console.log('验证通过：getLogs的结果中包含usdc的日志的数据是否和 Transfer(null,null) 的结果一致。')
     } else {
-      console.warn('验证失败：getLogs的结果中包含usdc的日志的数据是否和 Transfer(null,null) 的结果不一致。')
+      const transferNullListFileContent = await readFile(getListFileName('a'), { encoding: 'utf8' });
+      const transferNullList = JSON.parse(transferNullListFileContent);
+      const getLogsListFileContent = await readFile(getListFileName('c'), { encoding: 'utf8' });
+      const getLogsList = JSON.parse(getLogsListFileContent);
+      const getLogsWithTokenList = getLogsList.filter(x => x.withToken);
+      const faildList = [];
+      let faildReason='';
+      if (transferNullCounts.total > getLogsCounts.hasTokenLogCount) {
+        for (const item of transferNullList) {
+          const tran = getLogsWithTokenList.find(i => i.transactionHash === item.transactionHash);
+          if (!tran) faildList.push(item.transactionHash);
+        }
+        faildReason = 'getLogs的结果中包含usdc的日志的数据比Transfer(null,null)的结果少:';
+      }
+      else {
+        for (const item of getLogsWithTokenList) {
+          const tran = transferNullList.find(i => i.transactionHash === item.transactionHash);
+          if (!tran) faildList.push(item.transactionHash);
+        }
+        faildReason = 'getLogs的结果中包含usdc的日志的数据比Transfer(null,null)的结果多:';
+      }
+      
+      console.warn('验证失败：getLogs的结果中包含usdc的日志的数据是否和 Transfer(null,null) 的结果不一致。');
+      console.log(faildReason);
+      console.table(faildList);
     }
   }
+
 
   // 6. getLogs查询加上topics后，筛选出usdc日志筛选得出的结果是不是分别为 swapBridgeToV2 和 bridgeToV2 方法？
   async function checkGetLogsWithTopicsIsMethodInSwapBridgeToV2OrBridgeToV2 () {
