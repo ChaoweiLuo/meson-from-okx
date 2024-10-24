@@ -6,11 +6,10 @@ export const topicMap = {
   bridgeToV2: "0xf6481cbc1da19356c5cb6b884be507da735b89f21dc4bbb7c9b7cc0968b03b7a"
 }
 
-export async function getOkxTxns ({ token, rpc, okxContract, endBlock, startBlock, topic } = {}) {
-  let total = 0, toOkxCount = 0, hasTokenLogCount = 0, hasOkxLogCount = 0, toOkxAndHasTokenLogCount = 0;
+export async function getOkxTxns ({ tokens, rpc, okxContract, endBlock, startBlock } = {}) {
+  let total = 0, hasOkxLogCount = 0;
   const receiptList = [];
   const txHashByMethods = {};
-  const noneReceiptHashList = [];
 
   const provider = new ethers.providers.JsonRpcProvider(rpc.url);
   let currentBlock = endBlock;
@@ -18,8 +17,7 @@ export async function getOkxTxns ({ token, rpc, okxContract, endBlock, startBloc
     const logs = await provider.getLogs({
       fromBlock: Math.max(startBlock, currentBlock - 1000),
       toBlock: currentBlock,
-      address: okxContract,
-      topics: [topic]
+      address: okxContract
     })
     for (const log of logs) {
       await handleLog(log)
@@ -31,37 +29,26 @@ export async function getOkxTxns ({ token, rpc, okxContract, endBlock, startBloc
     total++;
     const provider = new ethers.providers.JsonRpcProvider(rpc.url);
     const receipt = await provider.getTransactionReceipt(log.transactionHash)
-    if (!receipt) return noneReceiptHashList.push(log.transactionHash);
+    if (!receipt) return;
     receiptList.push(receipt);
-    const tokenLog = receipt.logs.find(log => log.address.toLowerCase() === token)
-    const isToOkx = receipt.to.toLowerCase() === okxContract;
-    const okxLog = receipt.logs.find(log => log.address.toLowerCase() === okxContract)
-    receipt.isToOkx = isToOkx;
-    receipt.withOkxLog = !!okxLog;
-    receipt.withToken = !!tokenLog;
-    if (tokenLog) {
-      hasTokenLogCount++
-      if (isToOkx) toOkxAndHasTokenLogCount++;
-      const tx = await provider.getTransaction(log.transactionHash);
-      const method = tx.data.slice(0, 10);
-      txHashByMethods[method] = txHashByMethods[method] || [];
-      const item = {
-        hash: log.transactionHash,
-        "to=okx": isToOkx,
-        "logs.includes(okx)": !!okxLog
-      }
-      txHashByMethods[method].push(item);
-      receipt.method = method;
+    for (const tokenName in tokens) {
+      const token = tokens[tokenName];
+      const tokenLog = receipt.logs.find(log => log.address.toLowerCase() === token)
+      receipt[tokenName] = !!tokenLog;
     }
-    if (isToOkx) toOkxCount++;
-    if (!!okxLog) hasOkxLogCount++;
+    let okxMethods = receipt.logs
+      .filter(log => log.address.toLowerCase() === okxContract)
+      .map(x => x.topics[0])
+      .map(topic => topicMap[topic] || topic);
+    okxMethods = Array.from(new Set(okxMethods));
+    if(okxMethods.length) {
+      receipt.okxMethods = okxMethods;
+      hasOkxLogCount++;
+    }
   }
   const counts = {
     total,
-    hasTokenLogCount,
     hasOkxLogCount,
-    toOkxCount,
-    toOkxAndHasTokenLogCount
   }
-  return { receiptList, txHashByMethods, noneReceiptHashList, counts }
+  return { receiptList, txHashByMethods, counts }
 }

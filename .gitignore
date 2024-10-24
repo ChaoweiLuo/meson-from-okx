@@ -1,3 +1,4 @@
 node_modules/
 temp/
 mode_*.json
+log_*.json
