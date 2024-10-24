@@ -42,7 +42,7 @@ export default async function load ({ mode, chainName, tokenName, startBlock, en
   }
   createWriteStream(txHashByMethodsFileName).write(JSON.stringify(map, null, 2));
   const countsFileName = `mode_${mode}_count_${chainName}_${tokenName}-${startBlock}-${endBlock}.json`;
-  createWriteStream(countsFileName).write(JSON.stringify(counts, null, 2));
+  createWriteStream(countsFileName).write(JSON.stringify({...counts, methods: mapCount}, null, 2));
 
   console.log("Mode:", mode, ',chain:', chainName, ',token:', tokenName, ',startBlock:', startBlock, ',endBlock:', endBlock);
   console.log("The count is: ");

@@ -104,11 +104,11 @@ export default async function check (args = {}) {
     const transferNullCounts = JSON.parse(transferNullFileContent);
     const getLogsContent = await readFile(getCountsFileName('c'), { encoding: 'utf8' });
     const getLogsCounts = JSON.parse(getLogsContent);
-    if (transferNullCounts.total === getLogsCounts.hasTokenLogCount) {
+    if (transferNullCounts.toOkxCount === getLogsCounts.hasTokenLogCount) {
       console.log('验证通过：getLogs的结果中包含usdc的日志的数据是否和 Transfer(null,null) 的结果一致。')
     } else {
       const transferNullListFileContent = await readFile(getListFileName('a'), { encoding: 'utf8' });
-      const transferNullList = JSON.parse(transferNullListFileContent);
+      const transferNullList = JSON.parse(transferNullListFileContent).filter(x => x.isToOkx);
       const getLogsListFileContent = await readFile(getListFileName('c'), { encoding: 'utf8' });
       const getLogsList = JSON.parse(getLogsListFileContent);
       const getLogsWithTokenList = getLogsList.filter(x => x.withToken);
