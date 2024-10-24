@@ -82,5 +82,19 @@
       "usdt": "0x1e4a5963abfd975d8c9021ce480b42188849d41d",
       "usdc": "0x74b7f16337b8972027f6196a17a631ac6de26d22"
     }
+  },
+  "arbitrum": {
+    "name": "arbitrum",
+    "rpc": {
+      "network": "arbitrum",
+      "url": "https://api.zan.top/arb-one",
+      "type": "http"
+    },
+    "okxContract": "0xfc99f58a8974a4bc36e60e2d490bb8d72899ee9f",
+    "mesonContract": "0x25ab3efd52e6470681ce037cd546dc60726948d3",
+    "tokens": {
+      "usdt": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+      "usdc": "0xaf88d065e77c8cc2239327c5edb3a432268e5831"
+    }
   }
 }
