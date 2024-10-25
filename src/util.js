@@ -41,3 +41,15 @@ export async function getBlockRange (rpc, date) {
   }
   return { startBlock, endBlock, }
 }
+
+const rpc = {
+  "network": "xlayer",
+  "url": "https://xlayerrpc.okx.com",
+  "type": "http"
+}
+
+// const date = new Date(2024, 8, 8)
+// console.log('UTC Time:', new Date().toISOString());
+
+// const blockRange = await getBlockRange(rpc, date);
+// console.log(blockRange)
