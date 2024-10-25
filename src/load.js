@@ -2,17 +2,13 @@
 import { getOkxTxns, topicMap } from './getOkxTxns.js';
 import config from './config.json' assert { type: 'json'  };
 import { createWriteStream } from 'fs';
-import { getBlockRange } from './util.js';
+import { formatUTCTime, getRangeTimeBlockRange } from './util.js';
 
 
-export default async function load ({ chainName, startBlock, endBlock, date } = {}) {
+export default async function load ({ chainName, startTime, endTime } = {}) {
   const ts = Date.now();
   const chain = config[chainName];
-  if(!startBlock || !endBlock && date) {
-    const blockRange = await getBlockRange(chain.rpc, date);
-    startBlock = blockRange.startBlock;
-    endBlock = blockRange.endBlock;
-  }
+  const { startBlock, endBlock } = await getRangeTimeBlockRange(chain.rpc, startTime, endTime);
   let result = await getOkxTxns({ ...chain, startBlock, endBlock });
 
   const { receiptList, counts } = result;
@@ -23,20 +19,15 @@ export default async function load ({ chainName, startBlock, endBlock, date } = 
   createWriteStream(countsFileName).write(JSON.stringify({ ...counts }, null, 2));
   const txHashByMethodsFileName = `log_txHashByMethods_${chainName}_${startBlock}-${endBlock}.json`;
   createWriteStream(txHashByMethodsFileName).write(JSON.stringify(txHashByMethods, null, 2));
-/**
- * 一共293笔交易，包含Meson event的xxx笔，其中：
-- bridgeToV2: xxx
-- swapBridgeToV2: xxx
-- bridgeToV2,CommissionRecord: xxx
- */
-  console.log('chain:', chainName, ',startBlock:', startBlock, ',endBlock:', endBlock);
+
+  console.log('chain', chainName, 'startTime', formatUTCTime(startTime), 'endTime', formatUTCTime(endTime), 'startBlock', startBlock, 'endBlock', endBlock);
   console.log(`一共${counts.total}笔交易，包含Meson event的${counts.hasMesonEvent}笔，其中：`);
   for (const method in txHashByMethods.mesonTxHashByMethods) {
     console.log(' ', `${method}:`, txHashByMethods.mesonTxHashByMethods[method].length);
   }
   console.log('Time used: ', (Date.now() - ts) / 1000, 's');
   console.log('Block count: ', endBlock - startBlock + 1);
-  console.log('The counts saved in: ', countsFileName)
+  console.log('The counts saved in: ', countsFileName);
   console.log('The receiptList saved in: ', receiptListFileName);
   console.log('The txHashByMethods saved in: ', txHashByMethodsFileName);
 }

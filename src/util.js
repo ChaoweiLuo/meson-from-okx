@@ -1,6 +1,12 @@
 import { ethers } from "ethers";
 
 export async function getBlockRange (rpc, date) {
+  const startTime = new Date(date).setUTCHours(0, 0, 0, 0).valueOf();
+  const endTime = startTime + 1000 * 60 * 60 * 24;
+  return getRangeTimeBlockRange(rpc, startTime, endTime);
+}
+
+export async function getRangeTimeBlockRange(rpc, startTime, endTime) {
   const provider = new ethers.providers.JsonRpcProvider(rpc.url);
   async function getBlockTime (blockNumber) {
     const blockTimeMap = {};
@@ -16,9 +22,6 @@ export async function getBlockRange (rpc, date) {
 
   const blockIntervalTime = (maxBlockTime - otherBlockTime) / 100; // 大概的间隔时间 
 
-  const startTime = new Date(date).setUTCHours(0, 0, 0, 0).valueOf() - 1;
-
-  const endTime = startTime + 1000 * 60 * 60 * 24;
   if (startTime > maxBlockTime) {
     console.error('Start time:', startTime, 'is greater than maxBlockTime:', maxBlockTime);
   }
@@ -40,6 +43,12 @@ export async function getBlockRange (rpc, date) {
     console.warn('startBlock:', startBlock, 'is greater than endBlock:', endBlock);
   }
   return { startBlock, endBlock, }
+}
+
+export function formatUTCTime(time) {
+  const date = new Date(time);
+  // YYYY-MM-DD HH:mm:ss
+  return `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()} ${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}`
 }
 
 const rpc = {
