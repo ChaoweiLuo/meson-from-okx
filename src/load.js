@@ -16,7 +16,6 @@ export default async function load ({ chainName, startBlock, endBlock, date } = 
   let result = await getOkxTxns({ ...chain, startBlock, endBlock });
 
   const { receiptList, counts } = result;
-  const tokenCounts = getTokenCounts(receiptList);
   const txHashByMethods = getOkxMethods(receiptList);
   const receiptListFileName = `log_receipt_list_${chainName}_${startBlock}-${endBlock}.json`;
   createWriteStream(receiptListFileName).write(JSON.stringify(receiptList, null, 2));
@@ -32,26 +31,14 @@ export default async function load ({ chainName, startBlock, endBlock, date } = 
  */
   console.log('chain:', chainName, ',startBlock:', startBlock, ',endBlock:', endBlock);
   console.log(`一共${counts.total}笔交易，包含Meson event的${counts.hasMesonEvent}笔，其中：`);
-  console.log('方法对应的交易数量:');
-  for (const method in txHashByMethods.txHashByMethods) {
-    console.log(' ', `${method}:`, txHashByMethods.txHashByMethods[method].length);
+  for (const method in txHashByMethods.mesonTxHashByMethods) {
+    console.log(' ', `${method}:`, txHashByMethods.mesonTxHashByMethods[method].length);
   }
   console.log('Time used: ', (Date.now() - ts) / 1000, 's');
   console.log('Block count: ', endBlock - startBlock + 1);
   console.log('The counts saved in: ', countsFileName)
   console.log('The receiptList saved in: ', receiptListFileName);
   console.log('The txHashByMethods saved in: ', txHashByMethodsFileName);
-}
-
-function getTokenCounts (receiptList) {
-  const tokenCounts = { usdc: 0, usdt: 0, bothCount: 0, noneCount: 0 };
-  for (const receipt of receiptList) {
-    if (receipt.usdc && receipt.usdt) tokenCounts.bothCount++;
-    if (receipt.usdc) tokenCounts.usdc++;
-    if (receipt.usdt) tokenCounts.usdt++;
-    if (!receipt.usdc && !receipt.usdt) tokenCounts.noneCount++;
-  }
-  return tokenCounts
 }
 
 function getOkxMethods (receiptList) {
@@ -62,26 +49,18 @@ function getOkxMethods (receiptList) {
     "0xffc60ee157a42f4d8edbd1897e6581a96d9ed04e44fb2ab53a47ce1eb8f2775b": "CommissionRecord"
   }
   const txHashByMethods = {};
-  const usdtTxHashByMethods = {};
-  const usdcTxHashByMethods = {};
-  const bothTxHashByMethods = {};
+  const mesonTxHashByMethods = {};
   for (const receipt of receiptList) {
     if (receipt.okxMethods?.length) {
       const methods = receipt.okxMethods.map(x => topicMapToMethod[x] || x).join(',');
       txHashByMethods[methods] = txHashByMethods[methods] || [];
       txHashByMethods[methods].push(receipt.transactionHash);
-      if (receipt.usdc && receipt.usdt) {
-        bothTxHashByMethods[methods] = bothTxHashByMethods[methods] || [];
-        bothTxHashByMethods[methods].push(receipt.transactionHash);
-      } else if (receipt.usdc) {
-        usdcTxHashByMethods[methods] = usdcTxHashByMethods[methods] || [];
-        usdcTxHashByMethods[methods].push(receipt.transactionHash);
-      } else if (receipt.usdt) {
-        usdtTxHashByMethods[methods] = usdtTxHashByMethods[methods] || [];
-        usdtTxHashByMethods[methods].push(receipt.transactionHash);
+      if (receipt.meson) {
+        mesonTxHashByMethods[methods] = mesonTxHashByMethods[methods] || [];
+        mesonTxHashByMethods[methods].push(receipt.transactionHash);
       }
     }
   }
 
-  return { txHashByMethods, usdtTxHashByMethods, usdcTxHashByMethods, bothTxHashByMethods }
+  return { txHashByMethods, mesonTxHashByMethods }
 }
