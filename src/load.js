@@ -2,11 +2,17 @@
 import { getOkxTxns, topicMap } from './getOkxTxns.js';
 import config from './config.json' assert { type: 'json'  };
 import { createWriteStream } from 'fs';
+import { getBlockRange } from './util.js';
 
 
-export default async function load ({ chainName, startBlock, endBlock } = {}) {
+export default async function load ({ chainName, startBlock, endBlock, date } = {}) {
   const ts = Date.now();
   const chain = config[chainName];
+  if(!startBlock || !endBlock && date) {
+    const blockRange = await getBlockRange(chain.rpc, date);
+    startBlock = blockRange.startBlock;
+    endBlock = blockRange.endBlock;
+  }
   let result = await getOkxTxns({ ...chain, startBlock, endBlock });
 
   const { receiptList, counts } = result;
@@ -18,14 +24,14 @@ export default async function load ({ chainName, startBlock, endBlock } = {}) {
   createWriteStream(countsFileName).write(JSON.stringify({ ...counts }, null, 2));
   const txHashByMethodsFileName = `log_txHashByMethods_${chainName}_${startBlock}-${endBlock}.json`;
   createWriteStream(txHashByMethodsFileName).write(JSON.stringify(txHashByMethods, null, 2));
-
+/**
+ * 一共293笔交易，包含Meson event的xxx笔，其中：
+- bridgeToV2: xxx
+- swapBridgeToV2: xxx
+- bridgeToV2,CommissionRecord: xxx
+ */
   console.log('chain:', chainName, ',startBlock:', startBlock, ',endBlock:', endBlock);
-  console.log("查询到的交易数量: ", counts.total);
-
-  console.log('交易中包含USDC&USDT的数量：');
-  for (const k in tokenCounts) {
-    console.log(' ', `${k}:`, tokenCounts[k]);
-  }
+  console.log(`一共${counts.total}笔交易，包含Meson event的${counts.hasMesonEvent}笔，其中：`);
   console.log('方法对应的交易数量:');
   for (const method in txHashByMethods.txHashByMethods) {
     console.log(' ', `${method}:`, txHashByMethods.txHashByMethods[method].length);
